@@ -1,0 +1,149 @@
+#!/bin/bash
+
+#set static variables
+PGENGINE="<%= @_bindir %>/postgres"
+PGDATA="<%= @_datadir %>"
+KEEPALIVEDCONF="/etc/keepalived/keepalived.conf"
+TRIGGER_FILE="${PGDATA}/failover.txt"
+RECOVERY_FILE="${PGDATA}/recovery.conf"
+
+#functions
+function promote_to_master() {
+	MASTER="$1"
+	stop_pe-puppet 
+	increase_vip_priority
+	reload_keepalived
+	verify_vips_migrated
+	enable_local_writes
+	disable_master_keepalived $MASTER
+	stop_masters_postgres $MASTER
+}
+function increase_vip_priority() {
+	echo "Increasing vip priority..."
+	sed -i.failover 's/.*priority.*/  priority                  150/g' $KEEPALIVEDCONF
+	RC=$?
+	if [ $RC -eq 0 ]
+	then
+		echo "Done (backup in ${KEEPALIVEDCONF}.failover)"
+	else
+		echo "WARNING:Failed to increase vip priority."
+	fi
+}
+function reload_keepalived() {
+	echo "Reloading keepalived..."
+	service keepalived force-reload
+	RC=$?
+	sleep 5 #wait a few seconds for keepalived to finish coming up
+	if [ $RC -eq 0 ]
+	then
+		echo "Done"
+	else
+		echo "WARNING: Failed to reload keepalived"
+	fi
+	
+}
+function verify_vips_migrated() {
+	echo "Verifying IP's have migrated..."
+	IPLIST=`grep --no-group-separator -A 1 virtual_ipaddress /etc/keepalived/keepalived.conf | grep -v virtual_ipaddress | awk -F '/' {'print $1'} | xargs`
+	for ip in $IPLIST
+	do
+		echo "IP: $ip..."
+		MATCHED_IP=`ip addr | grep "$ip" | wc -l`
+		if [ $MATCHED_IP -eq 1 ]
+		then
+			echo "FOUND"
+		else
+			echo "CRITICAL, ip address(es) not found on local system.  Exiting, please investigate.  Once IP"
+			echo "is migrated to this server, you should only have to touch the trigger file to finish"
+			echo "promoting this server.  Please run:"
+			echo 
+			echo "sudo -u postgres touch $TRIGGER_FILE"
+			
+			exit 1
+		fi
+	done
+}
+function enable_local_writes() {
+	echo "Touching trigger file to enable local writes..."
+	sudo -u postgres touch $TRIGGER_FILE
+	RC=$?
+	if [ $RC -eq 0 ]
+	then
+		echo "Done"
+	else
+		echo "ERROR: Failed to create trigger file, this is not yet a master.  Existing, please investigate."
+		exit 1
+	fi
+}
+function disable_master_keepalived() {
+	echo 
+	echo
+	echo "Please ssh to the master ($MASTER) and stop keepalived."
+
+}
+function stop_masters_postgres() {
+	echo
+	echo
+	echo "Please ssh to the master ($MASTER) and stop postgres to prevent accidental writes."
+}
+function stop_pe-puppet() {
+	echo
+	echo
+	echo "WARNING:  Stopping pe-pupped to prevent it from lowering priority on keepalived.  Please"
+	echo "adjust priority values in hieradata for hosts in this cluster and start puppet!!!"
+	service pe-puppet stop
+	RC=$?
+	if [ $RC -eq 0 ]
+	then
+		echo "Done"
+	else
+		echo "ERROR: Failed to stop pe-puppet, please manually stop it to prevent failback and a split-brain scenario"
+		exit 1
+	fi
+}
+#verify running script as root
+if [ "$(whoami)" != "root" ]
+then
+   echo "This script must be run as root or with sudo permissions" 1>&2
+   exit 1
+fi
+
+#verify postgres is running
+if [ "`ps aux | grep $PGENGINE | grep -v grep | wc -l`" -lt 1 ]
+then
+   echo "Postgres does not appear to be running" 1>&2
+   exit 1
+fi
+
+#verify recovery file exists
+if [ ! -f $RECOVERY_FILE ]
+then
+
+	echo "Recovery file does not exist, this may already be a master. Try promoting a slave.  Aborting..."
+	exit 1
+fi
+
+#discover current master
+IFS=' ' PARAMS=(`cat $PGDATA/recovery.conf | grep primary_conninfo | awk -F "'" {'print $2'}`)
+MASTER=`echo "${PARAMS[0]}" | awk -F '=' {'print $2'}`
+#REPUSER=`echo "${PARAMS[2]}" | awk -F '=' {'print $2'}`
+#REPPASS=`echo "${PARAMS[3]}" | awk -F '=' {'print $2'}`
+#echo "MASTER: $MASTER, REPUSER: $REPUSER, REPPASS: $REPPASS"
+echo "It appears this is a slave of $MASTER.  You should try to run failover_postgres_from_master.sh from"
+echo "the $MASTER if it is available.  It is safer to promote a slave by running the master script"
+echo "from the master server.  There is a greater risk of keepalived stealing the vip when the master"
+echo "becomes available if you promote from the slave.  This script should only be used if the master is"
+echo "unavailalbe."
+echo 
+read -p "Are you sure you want to promote the current machine (y/n)?" -n 1 -r
+echo ""
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+	echo "Attempting to promote this server to master:"
+	promote_to_master $MASTER
+else
+	echo "Reply did not match Y or y, Aborting..."
+	exit 1
+fi
+	  
+

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+PATH=$PATH:<%= @_bindir %>
+ARCHIVEDIR='<%= @_archive %>'
+CHKPOINT=$(find $ARCHIVEDIR -type f -name '*backup' -printf '%f\n' | sort -r | head -1)
+cd $ARCHIVEDIR
+
+pg_archivecleanup $ARCHIVEDIR $CHKPOINT
