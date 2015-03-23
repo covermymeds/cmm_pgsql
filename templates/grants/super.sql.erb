@@ -1,0 +1,2 @@
+ALTER GROUP postgres ADD USER "<%= @username %>";
+GRANT select, insert, update, delete ON ALL TABLES IN SCHEMA public TO "<%= @username %>";

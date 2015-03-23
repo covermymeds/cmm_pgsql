@@ -1,0 +1,10 @@
+<%= @_pgdata %>/pg_log/logrotate {
+        daily
+        rotate 0
+        create
+        ifempty
+        lastaction
+                /usr/bin/find <%= @_pgdata %>/pg_log/ -mtime +<%= @daysuntildelete %> -delete
+                /usr/bin/find <%= @_pgdata %>/pg_log/ -mtime +<%= @daysuntilcompress %> -exec gzip -q {} \;
+        endscript
+}

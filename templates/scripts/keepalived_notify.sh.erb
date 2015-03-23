@@ -1,0 +1,51 @@
+#!/bin/bash
+TYPE=$1
+NAME=$2
+STATE=$3
+PGDATA="<%= @_datadir %>"
+LOGFILE="<%= @keepalived_notifylog %>.${NAME}"
+DATE=`date +"%Y-%m-%d %T"`
+
+echo "$DATE failover notification started" >> $LOGFILE
+if [ -f "$PGDATA/recovery.conf" ] #this is a slave, find the host its slaving from
+then
+
+  PGHOST=`cat $PGDATA/recovery.conf | grep host | awk -F "=" {'print $3'} | awk {'print $1'}`
+
+  #test ping to the master
+  ping -c 5 -W 2 -i 0.01 $PGHOST >> $LOGFILE
+
+  if [ $? -ne 0 ]
+    then
+    echo "$DATE failed to ping host $PGHOST" >> $LOGFILE
+    exit 3
+  fi
+fi
+
+echo "" >> $LOGFILE
+echo "" >> $LOGFILE
+echo "Starting tcpdump..." >> $LOGFILE
+timeout 10 tcpdump -v -i ens192 host 224.0.0.18 >> $LOGFILE
+echo "" >> $LOGFILE
+echo "" >> $LOGFILE
+echo "------end log------" >> $LOGFILE
+echo "" >> $LOGFILE
+echo "" >> $LOGFILE
+echo "" >> $LOGFILE
+echo "" >> $LOGFILE
+
+#consider using a script like this to touch the postgres file to automatically promote server
+#case $STATE in
+#  "MASTER") /etc/init.d/apache2 start
+#    exit 0
+#    ;;
+#  "BACKUP") /etc/init.d/apache2 stop
+#    exit 0
+#    ;;
+#  "FAULT")  /etc/init.d/apache2 stop
+#    exit 0
+#    ;;
+#  *)        echo "unknown state"
+#    exit 1
+#    ;;
+#esac

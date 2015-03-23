@@ -1,0 +1,168 @@
+#!/bin/bash
+
+#set static variables
+PGDATA="<%= @_datadir %>"
+KEEPALIVEDCONF="/etc/keepalived/keepalived.conf"
+TRIGGER_FILE="${PGDATA}/failover.txt"
+RECOVERY_FILE="${PGDATA}/recovery.conf"
+
+#functions
+function usage() {
+	echo "`basename $0` -H [slave_to_failover_to]"
+}
+function demote() {
+	MASTER="$1"
+	stop_pe-puppet 
+	disable_master_keepalived 
+	decrease_vip_priority
+	enable_remote_writes $FAILOVER_HOST
+	stop_masters_postgres
+}
+function increase_vip_priority() {
+	echo "Increasing vip priority..."
+	sed -i.failover 's/.*priority.*/  priority                  0/g' $KEEPALIVEDCONF
+	RC=$?
+	if [ $RC -eq 0 ]
+	then
+		echo "Done (backup in ${KEEPALIVEDCONF}.failover)"
+	else
+		echo "WARNING:Failed to decrease vip priority."
+	fi
+}
+function verify_vips_migrated() {
+	echo "Verifying IP's have migrated..."
+	IPLIST=`grep --no-group-separator -A 1 virtual_ipaddress /etc/keepalived/keepalived.conf | grep -v virtual_ipaddress | awk -F '/' {'print $1'} | xargs`
+	for ip in $IPLIST
+	do
+		echo "IP: $ip..."
+		MATCHED_IP=`ip addr | grep "$ip" | wc -l`
+		if [ $MATCHED_IP -eq 1 ]
+		then
+			echo "FOUND"
+		else
+			echo "CRITICAL, ip address(es) not found on local system.  Exiting, please investigate.  Once IP"
+			echo "is migrated to this server, you should only have to touch the trigger file to finish"
+			echo "promoting this server.  Please run:"
+			echo 
+			echo "sudo -u postgres touch $TRIGGER_FILE"
+			
+			exit 1
+		fi
+	done
+}
+function enable_remote_writes() {
+	echo "Touching trigger file to enable local writes..."
+	ssh postgres@$FAILOVER_HOST"touch $TRIGGER_FILE"
+	RC=$?
+	if [ $RC -eq 0 ]
+	then
+		echo "Done"
+	else
+		echo "ERROR: Failed to create trigger file, this is not yet a master.  Existing, please investigate."
+		exit 1
+	fi
+}
+function disable_master_keepalived() {
+	echo "Stopping keepalived..."
+	service keepalived stop
+	RC=$?
+	if [ $RC -eq 0 ]
+	then
+		echo "Done"
+	else
+		echo "ERROR: Failed to stop keepalived.  Please stop it manually."
+		exit 1
+	fi
+
+}
+function stop_masters_postgres() {
+	echo "Stopping postgres on current master..."
+	service postgresql-9.3 stop
+	RC=$?
+	if [ $RC -eq 0 ]
+	then
+		echo "Done"
+	else
+		echo "ERROR: Failed to stop postgres.  Please stop it manually."
+		exit 1
+	fi
+}
+function stop_pe-puppet() {
+	echo
+	echo
+	echo "WARNING:  Stopping pe-pupped to prevent it from raising priority on keepalived.  Please"
+	echo "adjust priority values in hieradata for hosts in this cluster and start puppet!!!  You "
+	echo "will likely want to make this a slave of one of the slaves when it is stood back up."
+	service pe-puppet stop
+	RC=$?
+	if [ $RC -eq 0 ]
+	then
+		echo "Done"
+	else
+		echo "ERROR: Failed to stop pe-puppet, please manually stop it to prevent failback and a split-brain scenario"
+		exit 1
+	fi
+}
+
+#getopts
+while test $# -gt 0; do
+  case "$1" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    -H|--host)
+      shift
+      export FAILOVER_HOST=$1
+      shift
+      ;;
+    *)
+    break
+    ;;
+  esac
+done
+
+if [ -z "$FAILOVER_HOST" ]
+then
+	echo "You must specify the host to failover to."
+	usage
+	exit 1
+fi
+
+#verify running script as root
+if [ "$(whoami)" != "root" ]
+then
+   echo "This script must be run as root or with sudo permissions" 1>&2
+   exit 1
+fi
+
+#verify remote access to slave postgres user
+ssh postgres@$FAILOVER_HOST "ls > /dev/null" 1>&2
+RC=$?
+if [ $RC -ne 0 ]
+then
+   echo "The user could not connect to the failover host as the user postgres.  Please verify ssh keys are properly setup." 1>&2
+   exit 1
+fi
+
+#verify recovery file exists
+if [ -f $RECOVERY_FILE ]
+then
+
+	echo "Recovery file exists, this may be a slave. You can not demote a slave.  Try demoting from the master.  Aborting..."
+	exit 1
+fi
+
+echo 
+read -p "Are you sure you want to promote the host $FAILOVER_HOST to be the master (y/n)?" -n 1 -r
+echo ""
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+	echo "Attempting to promote this server to master:"
+	demote $MASTER
+else
+	echo "Reply did not match Y or y, Aborting..."
+	exit 1
+fi
+	  
+

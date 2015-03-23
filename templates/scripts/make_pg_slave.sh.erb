@@ -1,0 +1,253 @@
+#!/bin/bash
+
+# Make sure only root can run our script
+if [ "$(whoami)" != "root" ]
+then
+   echo "This script must be run as root or with sudo permissions" 1>&2
+   exit 1
+fi
+
+#set defaults
+REPL_USER="<%= @repl_user %>"
+REPL_PASS="<%= @repl_pass %>"
+PGDATA="<%= @_datadir %>"
+PGPORT="5432"
+SSLMODE="require"
+BACKUP="false"
+TRIGGER_FILE="<%= @_datadir %>/failover.txt"
+
+setup_replication() {
+
+  REPL_HOST=$1
+  REPL_USER=$2
+  REPL_PASS=$3
+  PGDATA=$4
+  PGPORT=$5
+  SSLMODE=$6
+  BACKUP=$7
+  TRIGGER_FILE=$8
+  KEEP=$9
+
+  echo "Setting up replication with below variables:
+  REPL_HOST: $REPL_HOST
+  REPL_USER: $REPL_USER
+  REPL_PASS: $REPL_PASS
+  PGDATA: $PGDATA
+  PGPORT: $PGPORT
+  SSLMODE: $SSLMODE
+  KEEP: $KEEP
+  "
+
+  if [ "$BACKUP" = "true" ]  
+  then
+
+    DATEVAL=`date +%Y%m%d%H%S`
+    PGDATADEST="$PGDATA/$DATEVAL"
+    if ! [ -d "${PGDATADEST}" ]
+    then
+
+      mkdir -p ${PGDATADEST}
+      chown postgres:postgres ${PGDATADEST}
+
+      if [ $KEEP -gt 0 ]
+      then 
+        echo "Keeping last $KEEP backups."
+        #do work here
+        FOLDERCOUNT=`ls ${PGDATA} | wc -l` #note, includes one white space non-folder
+        HEADCOUNT=$(expr $FOLDERCOUNT - $KEEP)        
+
+        if [ $HEADCOUNT -gt 0 ] 
+        then
+          cd ${PGDATA}
+          echo "removing below folders:"
+          DELFOLDERS=`ls -ltr ${PGDATA} | head -n $HEADCOUNT | awk {'print $9'} | xargs`
+          echo "$DELFOLDERS"
+          #probably want to add a confirm flag/and prompt check here
+          rm -rf $DELFOLDERS
+        fi #end headcount
+      fi #end integer check
+    fi #end pgdata dir check
+  else
+    PGDATADEST=$PGDATA
+    service postgresql-9.3 stop
+    RC=$?
+
+    if [ $RC -ne 0 ] 
+    then 
+      echo "failed to stop postgres, please investigate"
+      exit 1
+    fi
+  fi
+
+  rm -rf ${PGDATADEST}/*
+  RC=$?
+
+  if [ $RC -ne 0 ] 
+  then 
+    echo "failed to delete information from the postgres data dir, please investigate"
+    exit 1
+  fi
+
+  su - postgres -c "pg_basebackup -D ${PGDATADEST} --host=${REPL_HOST} --port=${PGPORT} -x -P --username=${REPL_USER} --password" <<EOF
+${REPL_PASS}
+EOF
+  RC=$?
+
+  if [ $RC -ne 0 ] 
+  then 
+    echo "failed to run successfull pg_basebackup, please investigate"
+    exit 1
+  fi
+
+  su - postgres -c "echo -e \"standby_mode = 'on'
+primary_conninfo = 'host=${REPL_HOST} sslmode=${SSLMODE} user=${REPL_USER} password=${REPL_PASS}'
+trigger_file = '${TRIGGER_FILE}' \" > ${PGDATADEST}/recovery.conf"
+
+  if ! [ "$BACKUP" = "true" ]  
+  then
+    service postgresql-9.3 start
+    RC=$?
+
+    if [ $RC -ne 0 ] 
+    then 
+      echo "failed to start postgres, please investigate"
+      exit 1
+    fi
+  fi
+
+}
+
+show_help() {
+  echo "This will make the server you are on a slave of the repl_host you provide"
+  echo " "
+  echo "All of the data in the ${PGDATA} directory will be removed!"
+  echo " "
+  echo "The repl_host is a required parameter"
+  echo " "
+  echo "options:"
+  echo "-h, --help                show brief help"
+  echo "-b, --backup		  backup flag prevents restart of local postgres services when running for backup"
+  echo "-u, --repl_user           The replication user to use (default: repl)"
+  echo "-p, --repl_pass           The replication password to use (default: repl)"
+  echo "-H, --repl_host           The host to replicate from"
+  echo "-d, --pgdata              The postgres data directory (default: ${PGDATA}"
+  echo "-P, --pgport              The postgres port (default: ${PGPORT})"
+  echo "-s, --sslmode             The sslmode for postgres (disable, allow, prefer, require, "
+  echo "                          verify-ca, verify-full).  Default: require"
+  echo "-t, --trigger_file	  Full path of trigger file to be used in recovery.conf"
+  echo "-k, --keep [x]		  Integer of number of backups to keep. Can only be used with -b|--backup flag is used"
+  echo " "
+}
+
+while test $# -gt 0; do
+  case "$1" in
+    -h|--help)
+      show_help
+      exit 0
+      ;;
+    -u|--repl_user)
+      shift
+      REPL_USER=$1
+      shift
+      ;;
+    -p|--repl_pass)
+      shift
+      REPL_PASS=$1
+      shift
+      ;;
+    -H|--repl_host)
+      shift
+      REPL_HOST=$1
+      shift
+      ;;
+    -P|--pgport)
+      shift
+      PGPORT=$1
+      shift
+      ;;
+    -d|--pgdata)
+      shift
+      PGDATA=$1
+      shift
+      ;;
+    -s|--sslmode)
+      shift
+      SSLMODE=$1
+      shift
+      ;;
+    -k|--keep)
+      shift
+      KEEP=$1
+      shift
+      ;;
+    -t|--trigger_file)
+      shift
+      TRIGGER_FILE=$1
+      shift
+      ;;
+    -b|--backup)
+      BACKUP='true'
+      shift
+      ;;
+    *)
+    break
+    ;;
+  esac
+done
+
+
+#test that host is set or exit
+if [ -z "$REPL_HOST" ]
+then
+  echo "You must specify the replication host"
+  echo "use: -H or --repl_host to do so"
+  echo " "
+  show_help
+  exit 1
+fi
+
+#test that if keep is specified that we have a backup flag and that it is an integer
+if ! [ -z "$KEEP" ]
+then
+  if ! [ "$BACKUP" == 'true' ]
+  then
+    echo "You specified the keep flag but did not specify backup.  Keep option can only be used with backups."
+    exit 1
+  fi
+  #test that keep is an integer
+  if ! [[ $KEEP =~ ^-?[0-9]+$ ]]
+  then
+    echo "You specified the keep variable, but it wasn't an integer."
+    exit 1
+  fi #end integer check
+fi #end keep check
+
+#test that host responds to ping or exit
+echo "Pinging host..."
+ping -c 1 $REPL_HOST
+RC=$?
+
+if [ $RC -eq 0 ] 
+then 
+  echo "Host found"
+else
+  echo "Unable to ping the host you specified"
+  exit 1
+fi
+
+#test that the port is open or exit
+echo "Testing port (timeout for test is system default)..."
+echo "" > /dev/tcp/${REPL_HOST}/${PGPORT}
+RC=$?
+
+if [ $RC -eq 0 ]
+then
+  echo "Port Open"
+else
+  echo "Unable to connect to the postgres port on the server ${REPL_HOST}"
+  exit 1
+fi
+
+setup_replication $REPL_HOST $REPL_USER $REPL_PASS $PGDATA $PGPORT $SSLMODE $BACKUP $TRIGGER_FILE $KEEP
+
+
