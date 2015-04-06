@@ -1,0 +1,19 @@
+{
+  "name": "cmm_pgsql",
+  "version": "0.0.1",
+  "author": "CoverMyMeds",
+  "license": "MIT",
+  "summary": "Manages postgres installs, users, and databases from hieradata",
+  "source": "https://github.com/covermymeds/cmm_pgsql",
+  "issues_url": "https://github.com/covermymeds/cmm_pgsql/issues",
+  "tags": ["postgres", "pgsql"],
+  "operatingsystem_support": [
+    {
+    "operatingsystem":"RedHat",
+    "operatingsystemrelease":[ "7.0" ]
+    },
+   ],
+  "dependencies": [
+    { "name": "puppetlabs/postgresql", "version_requirement": ">=3.3.3 <3.4.0" },
+  ]
+}
