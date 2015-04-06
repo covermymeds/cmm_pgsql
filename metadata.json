@@ -11,9 +11,9 @@
     {
     "operatingsystem":"RedHat",
     "operatingsystemrelease":[ "7.0" ]
-    },
+    }
    ],
   "dependencies": [
-    { "name": "puppetlabs/postgresql", "version_requirement": ">=3.3.3 <3.4.0" },
+    { "name": "puppetlabs/postgresql", "version_requirement": ">=3.3.3 <3.4.0" }
   ]
 }
