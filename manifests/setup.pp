@@ -73,11 +73,11 @@ class cmm_pgsql::setup (
     }
 
     $_packages = [
-      'pg_jobmon93',
-      'pg_repack93',
-      'pg_top93',
-      'postgresql93-contrib',
-      'slony1-93',
+      "pg_jobmon${::postgresql::server::package_version}",
+      "pg_repack${::postgresql::server::package_version}",
+      "pg_top${::postgresql::server::package_version}",
+      "postgresql${::postgresql::server::package_version}-contrib",
+      "slony1-${::postgresql::server::package_version}",
     ]
 
     package { $_packages:
