@@ -2,9 +2,11 @@
 
 #set static variables
 PGDATA="<%= @_datadir %>"
+SERVICE_NAME="postgresql-<%= @_pgversion %>"
 KEEPALIVEDCONF="/etc/keepalived/keepalived.conf"
 TRIGGER_FILE="${PGDATA}/failover.txt"
 RECOVERY_FILE="${PGDATA}/recovery.conf"
+
 
 #functions
 function usage() {
@@ -77,7 +79,7 @@ function disable_master_keepalived() {
 }
 function stop_masters_postgres() {
 	echo "Stopping postgres on current master..."
-	service postgresql-9.3 stop
+	service $SERVICE_NAME stop
 	RC=$?
 	if [ $RC -eq 0 ]
 	then
