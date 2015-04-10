@@ -11,6 +11,7 @@ fi
 REPL_USER="<%= @repl_user %>"
 REPL_PASS="<%= @repl_pass %>"
 PGDATA="<%= @_datadir %>"
+SERVICE_NAME="postgresql-<%= @_pgversion %>"
 PGPORT="5432"
 SSLMODE="require"
 BACKUP="false"
@@ -69,7 +70,7 @@ setup_replication() {
     fi #end pgdata dir check
   else
     PGDATADEST=$PGDATA
-    service postgresql-9.3 stop
+    service $SERVICE_NAME stop
     RC=$?
 
     if [ $RC -ne 0 ] 
@@ -105,7 +106,7 @@ trigger_file = '${TRIGGER_FILE}' \" > ${PGDATADEST}/recovery.conf"
 
   if ! [ "$BACKUP" = "true" ]  
   then
-    service postgresql-9.3 start
+    service $SERVICE_NAME start
     RC=$?
 
     if [ $RC -ne 0 ] 
