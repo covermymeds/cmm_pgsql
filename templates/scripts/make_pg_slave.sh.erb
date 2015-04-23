@@ -19,31 +19,27 @@ TRIGGER_FILE="<%= @_datadir %>/failover.txt"
 
 setup_replication() {
 
-  REPL_HOST=$1
-  REPL_USER=$2
-  REPL_PASS=$3
-  PGDATA=$4
-  PGPORT=$5
-  SSLMODE=$6
-  BACKUP=$7
-  TRIGGER_FILE=$8
-  KEEP=$9
-
-  echo "Setting up replication with below variables:
-  REPL_HOST: $REPL_HOST
-  REPL_USER: $REPL_USER
-  REPL_PASS: $REPL_PASS
-  PGDATA: $PGDATA
-  PGPORT: $PGPORT
-  SSLMODE: $SSLMODE
-  KEEP: $KEEP
-  "
+  REPL_HOST=${1}
+  REPL_USER=${2}
+  REPL_PASS=${3}
+  PGDATA=${4}
+  PGPORT=${5}
+  SSLMODE=${6}
+  BACKUP=${7}
+  TRIGGER_FILE=${8}
+  KEEP=${9}
+  COMPRESS=${10}
 
   if [ "$BACKUP" = "true" ]  
   then
 
     DATEVAL=`date +%Y%m%d%H%S`
     PGDATADEST="$PGDATA/$DATEVAL"
+    if [ "${COMPRESS}" = "true" ]
+    then
+      BACKUPARGS='-Ft -z'
+    fi
+
     if ! [ -d "${PGDATADEST}" ]
     then
 
@@ -89,7 +85,18 @@ setup_replication() {
     exit 1
   fi
 
-  su - postgres -c "pg_basebackup -D ${PGDATADEST} --host=${REPL_HOST} --port=${PGPORT} -x -P --username=${REPL_USER} --password" <<EOF
+  echo "Setting up replication with below variables:
+  REPL_HOST: $REPL_HOST
+  REPL_USER: $REPL_USER
+  REPL_PASS: $REPL_PASS
+  PGDATA: $PGDATA
+  PGPORT: $PGPORT
+  SSLMODE: $SSLMODE
+  KEEP: $KEEP
+  BACKUPARGS: $BACKUPARGS
+  "
+
+  su - postgres -c "pg_basebackup -D ${PGDATADEST} ${BACKUPARGS} --host=${REPL_HOST} --port=${PGPORT} -x -P --username=${REPL_USER} --password" <<EOF
 ${REPL_PASS}
 EOF
   RC=$?
@@ -126,17 +133,18 @@ show_help() {
   echo "The repl_host is a required parameter"
   echo " "
   echo "options:"
-  echo "-h, --help                show brief help"
   echo "-b, --backup		  backup flag prevents restart of local postgres services when running for backup"
-  echo "-u, --repl_user           The replication user to use (default: repl)"
-  echo "-p, --repl_pass           The replication password to use (default: repl)"
-  echo "-H, --repl_host           The host to replicate from"
   echo "-d, --pgdata              The postgres data directory (default: ${PGDATA}"
+  echo "-c, --compress            Can be used with the backup flag.  Will compress output"
+  echo "-h, --help                show brief help"
+  echo "-H, --repl_host           The host to replicate from"
+  echo "-p, --repl_pass           The replication password to use (default: repl)"
   echo "-P, --pgport              The postgres port (default: ${PGPORT})"
-  echo "-s, --sslmode             The sslmode for postgres (disable, allow, prefer, require, "
-  echo "                          verify-ca, verify-full).  Default: require"
-  echo "-t, --trigger_file	  Full path of trigger file to be used in recovery.conf"
   echo "-k, --keep [x]		  Integer of number of backups to keep. Can only be used with -b|--backup flag is used"
+  echo "-s, --sslmode             The sslmode for postgres (disable, allow, prefer, require, "
+  echo "                            verify-ca, verify-full).  Default: require"
+  echo "-t, --trigger_file	  Full path of trigger file to be used in recovery.conf"
+  echo "-u, --repl_user           The replication user to use (default: repl)"
   echo " "
 }
 
@@ -188,6 +196,10 @@ while test $# -gt 0; do
       ;;
     -b|--backup)
       BACKUP='true'
+      shift
+      ;;
+    -c|--compress)
+      COMPRESS='true'
       shift
       ;;
     *)
@@ -249,6 +261,6 @@ else
   exit 1
 fi
 
-setup_replication $REPL_HOST $REPL_USER $REPL_PASS $PGDATA $PGPORT $SSLMODE $BACKUP $TRIGGER_FILE $KEEP
+setup_replication $REPL_HOST $REPL_USER $REPL_PASS $PGDATA $PGPORT $SSLMODE $BACKUP $TRIGGER_FILE $KEEP $COMPRESS
 
 
