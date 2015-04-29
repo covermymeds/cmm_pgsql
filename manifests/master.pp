@@ -61,4 +61,17 @@ class cmm_pgsql::master {
     unless  => "SELECT extname from pg_extension WHERE extname = 'adminpack'",
   }
 
+  $_config = $::cmm_pgsql::setup::config
+  if (has_key($_config, 'shared_preload_libraries')) {
+    $_sharedlib = $_config['shared_preload_libraries']
+    unless empty($_sharedlib) {
+      if 'pg_stat_statements' in "${_sharedlib}" {
+        postgresql_psql{"verify_pg_stat_statements_installed":
+          command     => "CREATE EXTENSION pg_stat_statements;",
+          unless  => "SELECT extname from pg_extension WHERE extname = 'pg_stat_statements'",
+        }
+      }
+    }
+  }
+
 }
