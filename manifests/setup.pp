@@ -31,6 +31,12 @@ class cmm_pgsql::setup (
       create_resources(postgresql::server::pg_ident_rule, $_pg_ident)
     }
 
+    #setup pg_hba_rule if values exist
+    $_pg_hba_rule = $::cmm_pgsql::pg_hba_rule
+    unless empty($_pg_hba_rule) {
+      create_resources(postgresql::server::pg_hba_rule, $_pg_hba_rule)
+    }
+
 
     #setup postgres ssh keys
     unless empty($::cmm_pgsql::keysource) {
