@@ -79,7 +79,7 @@ cmm_pgsql::cluster: 'pgc0'
 
 Define the databases and applications that will utilize this cluster
   - use a 'common' area of hieradata for this definition
-  - this data structure will be shared be multiple posgresql hosts
+  - this data structure will be shared by multiple posgresql hosts
 
 Format:
 ```
@@ -108,7 +108,7 @@ cmm_pgsql::dblist::pgc0:
 
 Define the application database configuration
   - This configuration is shared with applications
-  - Hashes are application specific and use `hiera()` priority lookup and not a merged lookup.
+  - Hashes are application specific and use ```hiera()``` priority lookup and not a merged lookup.
   - The [puppet/app](https://git.innova-partners.com/puppet/app) will use this same data structure to create python, php and ruby application credentials
   - The data structure is very long and very verbose
   - The complexity will support:
@@ -225,7 +225,8 @@ cmm_pgsql::config:
     value: '1024MB'
 ```
 
-Define shinken monitors with nagios plugins
+Define monitors with nagios plugins
+  - NOTE: This currently uses an internal CMM puppet module.  We need to pull this out to use the built-in nagios types
   - Specify conservative values that can go in common.yaml.
   - It is better to have monitors on all new hosts with low thresholds than to expect data in the host specific file and forget monitors
   - Override defaults on an individual basis in the host file
