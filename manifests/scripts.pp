@@ -2,7 +2,7 @@ class cmm_pgsql::scripts{
 
   $_datadir   = $::postgresql::server::datadir
   $_bindir    = $::postgresql::server::bindir
-  $_pgversion = $::postgresql::server::version
+  $_pgversion = $::postgresql::globals::version
   $_archive   = $::cmm_pgsql::setup::pg_archive_dir
 
   # copy cmm management files into place for postgres

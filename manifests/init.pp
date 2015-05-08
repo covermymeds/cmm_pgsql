@@ -30,6 +30,8 @@ class cmm_pgsql (
   $keysource            = 'puppet:///modules/cmm_pgsql',
   $keepalived_notifylog = '/tmp/keepalived_notify.out',
   $keepalived_checklog  = '/tmp/keepalived_check.out',
+  $pg_ident             = {},
+  $pg_hba_rule          = {},
 ) {
 
   # Do nothing while in failover

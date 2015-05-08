@@ -25,6 +25,19 @@ class cmm_pgsql::setup (
     #include commvault backups
     include ::cmm_pgsql::commvault_backup
 
+    #setup pg_ident if values exist
+    $_pg_ident = $::cmm_pgsql::pg_ident 
+    unless empty($_pg_ident) {
+      create_resources(postgresql::server::pg_ident_rule, $_pg_ident)
+    }
+
+    #setup pg_hba_rule if values exist
+    $_pg_hba_rule = $::cmm_pgsql::pg_hba_rule
+    unless empty($_pg_hba_rule) {
+      create_resources(postgresql::server::pg_hba_rule, $_pg_hba_rule)
+    }
+
+
     #setup postgres ssh keys
     unless empty($::cmm_pgsql::keysource) {
       file { "/var/lib/pgsql/.ssh":
