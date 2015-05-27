@@ -16,7 +16,6 @@ function demote() {
 	MASTER="$1"
 	stop_pe-puppet 
 	disable_master_keepalived 
-	decrease_vip_priority
 	enable_remote_writes $FAILOVER_HOST
 	stop_masters_postgres
 }
@@ -54,7 +53,7 @@ function verify_vips_migrated() {
 }
 function enable_remote_writes() {
 	echo "Touching trigger file to enable local writes..."
-	ssh postgres@$FAILOVER_HOST"touch $TRIGGER_FILE"
+	sudo -i -u postgres ssh postgres@$FAILOVER_HOST "touch $TRIGGER_FILE"
 	RC=$?
 	if [ $RC -eq 0 ]
 	then
@@ -139,7 +138,7 @@ then
 fi
 
 #verify remote access to slave postgres user
-ssh postgres@$FAILOVER_HOST "ls > /dev/null" 1>&2
+sudo -i -u postgres ssh postgres@$FAILOVER_HOST "ls > /dev/null" 1>&2
 RC=$?
 if [ $RC -ne 0 ]
 then
