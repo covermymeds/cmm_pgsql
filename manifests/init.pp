@@ -28,6 +28,7 @@ class cmm_pgsql (
   $admin_user           = 'admin',
   $admin_pass           = 'admin',
   $keysource            = 'puppet:///modules/cmm_pgsql',
+  $include_commvault    = true,
   $keepalived_notifylog = '/tmp/keepalived_notify.out',
   $keepalived_checklog  = '/tmp/keepalived_check.out',
   $pg_ident             = {},
