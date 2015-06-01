@@ -23,7 +23,9 @@ class cmm_pgsql::setup (
     include ::cmm_pgsql::scripts
 
     #include commvault backups
-    include ::cmm_pgsql::commvault_backup
+    if $::cmm_pgsql::include_commvault == true {
+      include ::cmm_pgsql::commvault_backup
+    }
 
     #setup pg_ident if values exist
     $_pg_ident = $::cmm_pgsql::pg_ident 
@@ -86,7 +88,6 @@ class cmm_pgsql::setup (
     }
 
     $_packages = [
-      "pg_jobmon${::postgresql::server::package_version}",
       "pg_repack${::postgresql::server::package_version}",
       "pg_top${::postgresql::server::package_version}",
       "postgresql${::postgresql::server::package_version}-contrib",
