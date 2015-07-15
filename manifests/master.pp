@@ -41,7 +41,7 @@ class cmm_pgsql::master {
     psql_group => $::postgresql::server::group,
     psql_path  => $::postgresql::server::psql_path,
     unless     => "select 1 where (select has_schema_privilege('${::cmm_pgsql::repl_user}','public','CREATE')) = 'f'",
-    require    => Class['Postgresql::Server'],
+    require    => [ Class['Postgresql::Server'], Postgresql::server::role[$::cmm_pgsql::repl_user] ],
   }
 
 
