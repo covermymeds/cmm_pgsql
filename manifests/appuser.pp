@@ -21,8 +21,9 @@ define cmm_pgsql::appuser (
     }
 
     # give permission for user to connect to the database
-    unless defined(Postgresql::Server::Database_grant[$username]) {
-      postgresql::server::database_grant{ $username:
+    $connect_grant = "connect: ${username}@${database}"
+    unless defined(Postgresql::Server::Database_grant[$connect_grant]) {
+      postgresql::server::database_grant{ $connect_grant:
         privilege => 'CONNECT',
         db        => $database,
         role      => $username,
