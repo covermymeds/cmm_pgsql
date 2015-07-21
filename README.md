@@ -40,7 +40,7 @@ By default, this does setup of the following build standards:
 * If a postgres server has a recovery.conf file it is assumed the server is a slave and puppet does not try to manage users or databases
 
 
-###Setup Requirements **OPTIONAL**
+###Setup Requirements
 
 This module uses the [puppetlabs/puppet-postgresql](https://forge.puppetlabs.com/puppetlabs/postgresql)  module to implement the build standard operations.
 It also uses [arioch/keepalived](https://forge.puppetlabs.com/arioch/keepalived) for initial setup master/slave failover awareness.
