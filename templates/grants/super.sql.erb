@@ -1,2 +1,3 @@
 ALTER GROUP postgres ADD USER "<%= @username %>";
 GRANT select, insert, update, delete ON ALL TABLES IN SCHEMA public TO "<%= @username %>";
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT select, insert, update, delete ON TABLES TO "<%= @username %>";
