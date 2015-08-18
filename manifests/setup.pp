@@ -17,7 +17,6 @@ class cmm_pgsql::setup (
 
     #setup log management
     include ::cmm_pgsql::logrotate
-    include ::cmm_pgsql::central_logging
 
     #include some helpful scripts
     include ::cmm_pgsql::scripts
