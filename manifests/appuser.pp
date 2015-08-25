@@ -1,5 +1,6 @@
 define cmm_pgsql::appuser (
   $default_handle = false,
+  $pgbouncer_on   = false,
   $role,
   $database,
   $adapter,
@@ -17,6 +18,24 @@ define cmm_pgsql::appuser (
       postgresql::server::role { $username:
         password_hash => postgresql_password($username, $password),
         login         => true,
+      }
+    }
+
+    if $pgbouncer_on {
+      unless defined(Pgbouncer::Userlist["cmm_pgsql_module_${username}"]) {
+
+        # create pgbouncer auth_list config
+        pgbouncer::userlist{ "cmm_pgsql_module_${username}":
+          auth_list => [ { user => $username, password => $password }, ],
+        } 
+      }
+
+      unless defined(Pgbouncer::Database["cmm_pgsql_module_${database}_${username}"]) {
+
+        # create database config section of pgbouncer.ini
+        pgbouncer::databases {"cmm_pgsql_module_${database}_{username}":
+          databases => [ { source_db => $database, host => $host, dest_db => $database, auth_user => $username }, ],
+        }
       }
     }
 
