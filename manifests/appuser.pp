@@ -20,14 +20,7 @@ define cmm_pgsql::appuser (
       }
     }
 
-    unless defined(Notify['entered']) {
-      notify{'entered':}
-    }
-
     if "cmm_pgsql::pgbouncer_enabled" {
-    unless defined(Notify['entered2']) {
-      notify{'entered2':}
-    }
       unless defined(Pgbouncer::Userlist["cmm_pgsql_module_${username}"]) {
 
         # create pgbouncer auth_list config
