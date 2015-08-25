@@ -1,6 +1,5 @@
 define cmm_pgsql::appuser (
   $default_handle = false,
-  $pgbouncer_on   = false,
   $role,
   $database,
   $adapter,
@@ -21,7 +20,14 @@ define cmm_pgsql::appuser (
       }
     }
 
-    if $pgbouncer_on {
+    unless defined(Notify['entered']) {
+      notify{'entered':}
+    }
+
+    if "cmm_pgsql::pgbouncer_enabled" {
+    unless defined(Notify['entered2']) {
+      notify{'entered2':}
+    }
       unless defined(Pgbouncer::Userlist["cmm_pgsql_module_${username}"]) {
 
         # create pgbouncer auth_list config
@@ -30,7 +36,7 @@ define cmm_pgsql::appuser (
         } 
       }
 
-      unless defined(Pgbouncer::Database["cmm_pgsql_module_${database}_${username}"]) {
+      unless defined(Pgbouncer::Databases["cmm_pgsql_module_${database}_${username}"]) {
 
         # create database config section of pgbouncer.ini
         pgbouncer::databases {"cmm_pgsql_module_${database}_${username}":
