@@ -33,7 +33,7 @@ define cmm_pgsql::appuser (
       unless defined(Pgbouncer::Database["cmm_pgsql_module_${database}_${username}"]) {
 
         # create database config section of pgbouncer.ini
-        pgbouncer::databases {"cmm_pgsql_module_${database}_{username}":
+        pgbouncer::databases {"cmm_pgsql_module_${database}_${username}":
           databases => [ { source_db => $database, host => $host, dest_db => $database, auth_user => $username }, ],
         }
       }
