@@ -31,6 +31,7 @@ class cmm_pgsql (
   $include_commvault    = true,
   $keepalived_notifylog = '/tmp/keepalived_notify.out',
   $keepalived_checklog  = '/tmp/keepalived_check.out',
+  $pgbouncer_enabled    = false,
   $pg_ident             = {},
   $pg_hba_rule          = {},
 ) {
