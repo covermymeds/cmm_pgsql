@@ -7,13 +7,13 @@
 #
 
 define cmm_pgsql::monitoring_wrapper (
-  $monitor_description  = $title,
-  $monitor_command      = 'check_postgresql',
-  $monitor_args         = undef,
+  $monitor_description = $title,
+  $monitor_command     = 'check_postgresql',
+  $monitor_args        = undef,
 ) {
 
   ::monitoring::target::service {"${monitor_description}-${::hostname}":
-    command => "${monitor_command}! $monitor_args",
+    command => "${monitor_command}! ${monitor_args}",
   }
 
 }

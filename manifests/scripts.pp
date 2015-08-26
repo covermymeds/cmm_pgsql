@@ -6,20 +6,20 @@ class cmm_pgsql::scripts{
   $_archive   = $::cmm_pgsql::setup::pg_archive_dir
 
   # copy cmm management files into place for postgres
-  file { "/usr/local/src/make_pg_slave.sh":
-    mode    => "0500",
+  file { '/usr/local/src/make_pg_slave.sh':
+    mode    => '0500',
     owner   => 'root',
     group   => 'root',
     content => template('cmm_pgsql/scripts/make_pg_slave.sh.erb'),
   }
-  file { "/usr/local/src/failover_postgres_from_slave.sh":
-    mode    => "0500",
+  file { '/usr/local/src/failover_postgres_from_slave.sh':
+    mode    => '0500',
     owner   => 'root',
     group   => 'root',
     content => template('cmm_pgsql/scripts/failover_postgres_from_slave.sh.erb'),
   }
   file { '/usr/local/src/failover_postgres_from_master.sh':
-    mode    => "0500",
+    mode    => '0500',
     owner   => 'root',
     group   => 'root',
     content => template('cmm_pgsql/scripts/failover_postgres_from_master.sh.erb'),

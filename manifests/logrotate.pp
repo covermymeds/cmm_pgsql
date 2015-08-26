@@ -14,7 +14,6 @@ class cmm_pgsql::logrotate (
   #rotation is actually managing deletion and compression of logs using 
   #a post rotate process
   file { "${_pgdata}/pg_log/logrotate":
-    ensure  => present,
     replace => 'no', # this is the important property
     content => '', #empty file
     mode    => '0444',

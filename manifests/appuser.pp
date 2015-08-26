@@ -1,11 +1,11 @@
 define cmm_pgsql::appuser (
-  $default_handle = false,
-  $role,
-  $database,
   $adapter,
+  $database,
   $host,
-  $username,
   $password,
+  $role,
+  $username,
+  $default_handle = false,
 ) {
 
   # Don't setup non-postgresql

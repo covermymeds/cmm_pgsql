@@ -12,7 +12,7 @@ class cmm_pgsql::master {
   # Create maintenance database for admin user
   # This needs to run after creation of admin role
   postgresql::server::database { $::cmm_pgsql::admin_user:
-    owner => $::cmm_pgsql::admin_user,
+    owner   => $::cmm_pgsql::admin_user,
     require => Postgresql::Server::Role[$::cmm_pgsql::admin_user],
   }
 
@@ -34,7 +34,7 @@ class cmm_pgsql::master {
   }
 
   # change template1 permissions to not allow create
-  $revoke_create = "revoke create on schema public from public"
+  $revoke_create = 'revoke create on schema public from public'
   postgresql_psql { $revoke_create:
     db         => 'template1',
     psql_user  => $::postgresql::server::user,
@@ -56,8 +56,8 @@ class cmm_pgsql::master {
   }
 
   # install admin pack (prevents pgAdminIII from griping about features)
-  postgresql_psql{"verify_adminpack_installed":
-    command     => "CREATE EXTENSION adminpack;",
+  postgresql_psql{'verify_adminpack_installed':
+    command => 'CREATE EXTENSION adminpack;',
     unless  => "SELECT extname from pg_extension WHERE extname = 'adminpack'",
   }
 
@@ -65,9 +65,9 @@ class cmm_pgsql::master {
   if (has_key($_config, 'shared_preload_libraries')) {
     $_sharedlib = $_config['shared_preload_libraries']
     unless empty($_sharedlib) {
-      if 'pg_stat_statements' in "${_sharedlib}" {
-        postgresql_psql{"verify_pg_stat_statements_installed":
-          command     => "CREATE EXTENSION pg_stat_statements;",
+      if 'pg_stat_statements' in $_sharedlib {
+        postgresql_psql {'verify_pg_stat_statements_installed':
+          command => 'CREATE EXTENSION pg_stat_statements;',
           unless  => "SELECT extname from pg_extension WHERE extname = 'pg_stat_statements'",
         }
       }
