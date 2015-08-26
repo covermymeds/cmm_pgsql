@@ -14,7 +14,6 @@
     }
    ],
   "dependencies": [
-    { "name": "puppetlabs/postgresql", "version_requirement": ">=3.3.3 <=4.3.0" },
-    { "name": "covermymeds/pgbouncer" }
+    { "name": "puppetlabs/postgresql", "version_requirement": ">=3.3.3 <=4.3.0" }
   ]
 }
