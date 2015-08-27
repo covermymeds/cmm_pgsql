@@ -20,7 +20,7 @@ define cmm_pgsql::appuser (
       }
     }
 
-    if "$::cmm_pgsql::pgbouncer_enabled" {
+    if $::cmm_pgsql::pgbouncer_enabled {
       unless defined(Pgbouncer::Userlist["cmm_pgsql_module_${username}"]) {
 
         # create pgbouncer auth_list config
