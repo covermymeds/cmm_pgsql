@@ -39,6 +39,11 @@ class cmm_pgsql (
   # Do nothing while in failover
   unless str2bool($::pg_failover) {
     
+    # include pgbouncer if enabled
+    if $pgbouncer_enabled {
+      include ::pgbouncer
+    }
+
     include ::cmm_pgsql::setup
 
     # Is the server is in replication mode or not?
