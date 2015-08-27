@@ -40,7 +40,7 @@ class cmm_pgsql (
   unless str2bool($::pg_failover) {
     
     # include pgbouncer if enabled
-    if cmm_pgsql::pgbouncer_enabled {
+    if $pgbouncer_enabled {
       include ::pgbouncer
     }
 
