@@ -5,7 +5,7 @@ class cmm_pgsql::logrotate (
 {
   # The pgdata directory must exist
   require ::postgresql::server
-  require ::logrotate::base
+  require ::logrotate
 
   $_pgdata = $::postgresql::server::datadir
 
@@ -25,7 +25,7 @@ class cmm_pgsql::logrotate (
     owner   => 'root',
     group   => 'root',
     content => template('cmm_pgsql/logrotate/postgresql.erb'),
-    require => Class[::logrotate::base],
+    require => Class[::logrotate],
   }
 
 }
