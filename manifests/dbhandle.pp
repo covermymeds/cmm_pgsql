@@ -17,14 +17,14 @@ define cmm_pgsql::dbhandle {
   $_appconfig = hiera_hash($_hiera_lookup, {})
 
   if empty($_appconfig) {
-    fail("Missing hiera config for '$_hiera_lookup'")
+    fail("Missing hiera config for '${_hiera_lookup}'")
   }
 
   if has_key($_appconfig, $_database) {
     $_dbconfig = $_appconfig[$_database]
     $unique_dbconfig = prefix_keys($_dbconfig, "${_database}_${_appname}_")
   } else {
-    fail("Database $_database not found in $_appname config")
+    fail("Database ${_database} not found in ${_appname} config")
   }
 
   create_resources(::cmm_pgsql::appuser, $unique_dbconfig)
