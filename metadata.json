@@ -1,6 +1,6 @@
 {
   "name": "cmm_pgsql",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "CoverMyMeds",
   "license": "MIT",
   "summary": "Manages postgres installs, users, and databases from hieradata",
