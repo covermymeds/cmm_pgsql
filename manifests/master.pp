@@ -1,5 +1,8 @@
 class cmm_pgsql::master {
 
+  # ensure the service stuff is done first
+  require ::postgresql::server
+
   # Admin user that can administer via TCP and has global permissions
   postgresql::server::role { $::cmm_pgsql::admin_user:
     password_hash => postgresql_password($::cmm_pgsql::admin_user, $::cmm_pgsql::admin_pass),
