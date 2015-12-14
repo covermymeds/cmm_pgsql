@@ -97,6 +97,12 @@ class cmm_pgsql::setup (
     require => Class['postgresql::repo::yum_postgresql_org'],
   }
 
+  #add symlink to pg_top
+  file { '/bin/pg_top':
+    ensure => 'link',
+    target => $::postgresql::server::bindir,
+  }
+
   # Pull in monitor data from hiera and create the checks
   $_monitors = hiera_hash('cmm_pgsql::monitoring', {})
 
@@ -104,12 +110,5 @@ class cmm_pgsql::setup (
   unless empty($_monitors) {
     create_resources(::cmm_pgsql::monitoring_wrapper, $_monitors)
   }
-
-  #add symlink to pg_top
-  file { '/bin/pg_top':
-    ensure => 'link',
-    target => $::postgresql::bindir,
-  }
-
 
 }
