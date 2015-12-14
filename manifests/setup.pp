@@ -105,6 +105,7 @@ class cmm_pgsql::setup (
     create_resources(::cmm_pgsql::monitoring_wrapper, $_monitors)
   }
 
+  #add symlink to pg_top
   file { '/bin/pg_top':
     ensure => 'link',
     target => $::postgresql::bindir,
