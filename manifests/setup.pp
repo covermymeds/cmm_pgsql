@@ -105,5 +105,10 @@ class cmm_pgsql::setup (
     create_resources(::cmm_pgsql::monitoring_wrapper, $_monitors)
   }
 
+  file { '/bin/pg_top':
+    ensure => 'link',
+    target => $::postgresql::bindir,
+  }
+
 
 }
