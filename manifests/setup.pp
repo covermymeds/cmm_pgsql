@@ -100,7 +100,7 @@ class cmm_pgsql::setup (
   #add symlink to pg_top
   file { '/bin/pg_top':
     ensure => 'link',
-    target => $::postgresql::server::bindir,
+    target => "{$::postgresql::server::bindir}/pg_top",
   }
 
   # Pull in monitor data from hiera and create the checks
