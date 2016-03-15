@@ -1,6 +1,6 @@
-GRANT select, insert, update, delete ON ALL TABLES IN SCHEMA public TO "<%= @username %>";
-GRANT execute ON ALL functions IN SCHEMA public TO "<%= @username %>"; 
-GRANT USAGE ON ALL sequences IN SCHEMA public TO "<%= @username %>";
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT select, insert, update, delete ON TABLES TO "<%= @username %>";
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT execute ON functions to "<%= @username %>";
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT usage ON sequences to "<%= @username %>";
+GRANT select, insert, update, delete ON ALL TABLES IN SCHEMA "<%= @schema %>" TO "<%= @username %>";
+GRANT execute ON ALL functions IN SCHEMA "<%= @schema %>" TO "<%= @username %>"; 
+GRANT USAGE ON ALL sequences IN SCHEMA "<%= @schema %>" TO "<%= @username %>";
+ALTER DEFAULT PRIVILEGES IN SCHEMA "<%= @schema %>" GRANT select, insert, update, delete ON TABLES TO "<%= @username %>";
+ALTER DEFAULT PRIVILEGES IN SCHEMA "<%= @schema %>" GRANT execute ON functions to "<%= @username %>";
+ALTER DEFAULT PRIVILEGES IN SCHEMA "<%= @schema %>" GRANT usage ON sequences to "<%= @username %>";

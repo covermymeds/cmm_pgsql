@@ -5,6 +5,7 @@ define cmm_pgsql::appuser (
   $host,
   $username,
   $password,
+  $schema = public,
   $default_handle = false,
 ) {
 
@@ -48,12 +49,23 @@ define cmm_pgsql::appuser (
         require   => Postgresql::Server::Role[$username],
       }
     }
+    
+    # give permissions to the user on the schema
+    $schema_create = "schema: ${schema} ${username}@${database}"
+    unless defined(Postgresql::Server::Schema[$schema_create]) {
+      postgresql::server::schema{ $schema_create:
+        db     => $database,
+        owner  => $::postgresql::server::user,
+        schema => $schema,
+      }
+    }
 
     $role_grants = "role:${role} ${username}@${database}"
     unless defined(Postgresql_psql[$role_grants]) {
       postgresql_psql { $role_grants:
         command    => template("cmm_pgsql/grants/${role}.sql.erb"),
         db         => $database,
+        schema     => $schema,
         psql_user  => $::postgresql::server::user,
         psql_group => $::postgresql::server::group,
         psql_path  => $::postgresql::server::psql_path,
