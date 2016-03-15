@@ -5,7 +5,7 @@ define cmm_pgsql::appuser (
   $host,
   $username,
   $password,
-  $schema = public,
+  $schema         = 'public',
   $default_handle = false,
 ) {
 
