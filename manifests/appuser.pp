@@ -72,6 +72,7 @@ define cmm_pgsql::appuser (
                      FROM pg_default_acl a
                      JOIN pg_namespace b ON a.defaclnamespace=b.oid
                      WHERE defaclobjtype = 'r'
+                     AND nspname = '${schema}'
                      AND aclcontains(defaclacl, '\"${username}\"=r/postgres')",
         require    => [ Postgresql::Server::Role[$username], Postgresql::Server::Schema[$schema_create] ],
       }
