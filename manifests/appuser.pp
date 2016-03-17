@@ -65,7 +65,6 @@ define cmm_pgsql::appuser (
       postgresql_psql { $role_grants:
         command    => template("cmm_pgsql/grants/${role}.sql.erb"),
         db         => $database,
-        schema     => $schema,
         psql_user  => $::postgresql::server::user,
         psql_group => $::postgresql::server::group,
         psql_path  => $::postgresql::server::psql_path,
@@ -74,7 +73,7 @@ define cmm_pgsql::appuser (
                      JOIN pg_namespace b ON a.defaclnamespace=b.oid
                      WHERE defaclobjtype = 'r'
                      AND aclcontains(defaclacl, '\"${username}\"=r/postgres')",
-        require    => Postgresql::Server::Role[$username],
+        require    => [ Postgresql::Server::Role[$username], Postgresql::Server::Schema[$schema_create] ],
       }
     }
   }
