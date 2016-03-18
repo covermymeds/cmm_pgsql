@@ -1,5 +1,5 @@
 ALTER GROUP postgres ADD USER "<%= @username %>";
-GRANT select, insert, update, delete ON ALL TABLES IN SCHEMA public TO "<%= @username %>";
-GRANT usage, select ON ALL SEQUENCES IN SCHEMA public TO "<%= @username %>";
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT select, insert, update, delete ON TABLES TO "<%= @username %>";
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT usage, select ON SEQUENCES TO "<%= @username %>";
+GRANT select, insert, update, delete ON ALL TABLES IN SCHEMA "<%= @schema %>" TO "<%= @username %>";
+GRANT usage, select ON ALL SEQUENCES IN SCHEMA "<%= @schema %>" TO "<%= @username %>";
+ALTER DEFAULT PRIVILEGES IN SCHEMA "<%= @schema %>" GRANT select, insert, update, delete ON TABLES TO "<%= @username %>";
+ALTER DEFAULT PRIVILEGES IN SCHEMA "<%= @schema %>" GRANT usage, select ON SEQUENCES TO "<%= @username %>";

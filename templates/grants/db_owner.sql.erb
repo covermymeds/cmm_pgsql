@@ -1,7 +1,7 @@
-GRANT create ON  SCHEMA public TO "<%= @username %>";
-GRANT ALL ON ALL TABLES IN SCHEMA public TO "<%= @username %>";
-GRANT execute ON ALL functions IN SCHEMA public TO "<%= @username %>"; 
-GRANT USAGE ON ALL sequences IN SCHEMA public TO "<%= @username %>";
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO "<%= @username %>";
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT execute ON functions to "<%= @username %>";
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT usage ON sequences to "<%= @username %>";
+GRANT create ON  SCHEMA "<%= @schema %>" TO "<%= @username %>";
+GRANT ALL ON ALL TABLES IN SCHEMA "<%= @schema %>" TO "<%= @username %>";
+GRANT execute ON ALL functions IN SCHEMA "<%= @schema %>" TO "<%= @username %>"; 
+GRANT USAGE ON ALL sequences IN SCHEMA "<%= @schema %>" TO "<%= @username %>";
+ALTER DEFAULT PRIVILEGES IN SCHEMA "<%= @schema %>" GRANT ALL ON TABLES TO "<%= @username %>";
+ALTER DEFAULT PRIVILEGES IN SCHEMA "<%= @schema %>" GRANT execute ON functions to "<%= @username %>";
+ALTER DEFAULT PRIVILEGES IN SCHEMA "<%= @schema %>" GRANT usage ON sequences to "<%= @username %>";
