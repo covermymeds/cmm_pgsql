@@ -60,7 +60,7 @@ define cmm_pgsql::appuser (
       }
     }
 
-    $role_grants = "role:${role} ${username}@${database}"
+    $role_grants = "role:${role} ${schema} ${username}@${database}"
     unless defined(Postgresql_psql[$role_grants]) {
       postgresql_psql { $role_grants:
         command    => template("cmm_pgsql/grants/${role}.sql.erb"),
