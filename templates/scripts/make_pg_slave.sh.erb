@@ -12,10 +12,12 @@ REPL_USER="<%= @_repl_user %>"
 REPL_PASS="<%= @_repl_pass %>"
 PGDATA="<%= @_datadir %>"
 SERVICE_NAME="postgresql-<%= @_pgversion %>"
-PGPORT="5432"
-SSLMODE="require"
-BACKUP="false"
+PGPORT='5432'
+SSLMODE='require'
+BACKUP='false'
 TRIGGER_FILE="<%= @_datadir %>/failover.txt"
+PING_CHECK='true'
+
 
 setup_replication() {
 
@@ -133,45 +135,31 @@ show_help() {
   echo "The repl_host is a required parameter"
   echo " "
   echo "options:"
-  echo "-b, --backup		  backup flag prevents restart of local postgres services when running for backup"
-  echo "-d, --pgdata              The postgres data directory (default: ${PGDATA}"
-  echo "-c, --compress            Can be used with the backup flag.  Will compress output"
-  echo "-h, --help                show brief help"
-  echo "-H, --repl_host           The host to replicate from"
-  echo "-p, --repl_pass           The replication password to use (default: repl)"
-  echo "-P, --pgport              The postgres port (default: ${PGPORT})"
+  echo "-b, --backup		    Backup flag prevents restart of local postgres services when running for backup"
+  echo "-d, --pgdata        The postgres data directory (default: ${PGDATA}"
+  echo "-c, --compress      Can be used with the backup flag.  Will compress output"
+  echo "-h, --help          Show brief help"
+  echo "-H, --repl_host     The host to replicate from"
   echo "-k, --keep [x]		  Integer of number of backups to keep. Can only be used with -b|--backup flag is used"
-  echo "-s, --sslmode             The sslmode for postgres (disable, allow, prefer, require, "
-  echo "                            verify-ca, verify-full).  Default: require"
-  echo "-t, --trigger_file	  Full path of trigger file to be used in recovery.conf"
-  echo "-u, --repl_user           The replication user to use (default: repl)"
+  echo "-n, --no_ping       Disables the ping check before attempting to use the remote source"
+  echo "-p, --repl_pass     The replication password to use (default: repl)"
+  echo "-P, --pgport        The postgres port (default: ${PGPORT})"
+  echo "-s, --sslmode       The sslmode for postgres (disable, allow, prefer, require, "
+  echo "                      verify-ca, verify-full).  Default: require"
+  echo "-t, --trigger_file  Full path of trigger file to be used in recovery.conf"
+  echo "-u, --repl_user     The replication user to use (default: repl)"
   echo " "
 }
 
+
 while test $# -gt 0; do
   case "$1" in
-    -h|--help)
-      show_help
-      exit 0
-      ;;
-    -u|--repl_user)
-      shift
-      REPL_USER=$1
+    -b|--backup)
+      BACKUP='true'
       shift
       ;;
-    -p|--repl_pass)
-      shift
-      REPL_PASS=$1
-      shift
-      ;;
-    -H|--repl_host)
-      shift
-      REPL_HOST=$1
-      shift
-      ;;
-    -P|--pgport)
-      shift
-      PGPORT=$1
+    -c|--compress)
+      COMPRESS='true'
       shift
       ;;
     -d|--pgdata)
@@ -179,9 +167,13 @@ while test $# -gt 0; do
       PGDATA=$1
       shift
       ;;
-    -s|--sslmode)
+    -h|--help)
+      show_help
+      exit 0
+      ;;
+    -H|--repl_host)
       shift
-      SSLMODE=$1
+      REPL_HOST=$1
       shift
       ;;
     -k|--keep)
@@ -189,17 +181,33 @@ while test $# -gt 0; do
       KEEP=$1
       shift
       ;;
+    -n|--no_ping)
+      PING_CHECK='false'
+      shift
+      ;;
+    -p|--repl_pass)
+      shift
+      REPL_PASS=$1
+      shift
+      ;;
+    -P|--pgport)
+      shift
+      PGPORT=$1
+      shift
+      ;;
+    -s|--sslmode)
+      shift
+      SSLMODE=$1
+      shift
+      ;;
     -t|--trigger_file)
       shift
       TRIGGER_FILE=$1
       shift
       ;;
-    -b|--backup)
-      BACKUP='true'
+    -u|--repl_user)
       shift
-      ;;
-    -c|--compress)
-      COMPRESS='true'
+      REPL_USER=$1
       shift
       ;;
     *)
@@ -236,16 +244,19 @@ then
 fi #end keep check
 
 #test that host responds to ping or exit
-echo "Pinging host..."
-ping -c 1 $REPL_HOST
-RC=$?
+if [ "$PING_CHECK" == 'true' ]
+then
+  echo "Pinging host..."
+  ping -c 1 $REPL_HOST
+  RC=$?
 
-if [ $RC -eq 0 ] 
-then 
-  echo "Host found"
-else
-  echo "Unable to ping the host you specified"
-  exit 1
+  if [ $RC -eq 0 ] 
+  then 
+    echo "Host found"
+  else
+    echo "Unable to ping the host you specified"
+    exit 1
+  fi
 fi
 
 #test that the port is open or exit
