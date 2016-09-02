@@ -9,7 +9,7 @@
 define cmm_pgsql::monitoring_wrapper (
   $monitor_description  = $title,
   $monitor_command      = 'check_postgresql',
-  $monitor_contacts     = undef,
+  $monitor_contacts     = hiera('cmm_pgsql::monitoring_wrapper::monitor_contacts', undef),
   $monitor_args         = undef,
   $notes_url            = undef,
 ) {
