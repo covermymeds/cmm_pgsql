@@ -17,7 +17,7 @@ define cmm_pgsql::monitoring_wrapper (
   ::monitoring::target::service {"${monitor_description}-${::hostname}":
     command   => "${monitor_command}! $monitor_args",
     notes_url => $notes_url,
-    contacts => $monitor_contacts,
+    contacts  => $monitor_contacts,
   }
 
 }
