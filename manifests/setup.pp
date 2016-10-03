@@ -94,7 +94,6 @@ class cmm_pgsql::setup (
 
   package { $_packages:
     ensure  => installed,
-    require => Class['postgresql::repo::yum_postgresql_org'],
   }
 
   # Pull in monitor data from hiera and create the checks
