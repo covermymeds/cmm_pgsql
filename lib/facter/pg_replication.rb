@@ -30,5 +30,13 @@ if File.file?(psql_bin)
         File.file?("#{pg_data}/failover.txt")
       end
     end
+
+    # set pg_role to default to slave.
+    # it will be manually overridden
+    Facter.add('pg_role') do
+      setcode do
+        'slave'
+      end
+    end
   end
 end
