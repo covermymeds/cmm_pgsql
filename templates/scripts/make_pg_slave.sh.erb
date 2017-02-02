@@ -17,20 +17,22 @@ SSLMODE='require'
 BACKUP='false'
 TRIGGER_FILE="<%= @_datadir %>/failover.txt"
 PING_CHECK='true'
+MAX_RATE='15M'
 
 
 setup_replication() {
 
-  REPL_HOST=${1}
-  REPL_USER=${2}
-  REPL_PASS=${3}
-  PGDATA=${4}
-  PGPORT=${5}
-  SSLMODE=${6}
-  BACKUP=${7}
-  TRIGGER_FILE=${8}
-  KEEP=${9}
-  COMPRESS=${10}
+  MAX_RATE=${1}
+  REPL_HOST=${2}
+  REPL_USER=${3}
+  REPL_PASS=${4}
+  PGDATA=${5}
+  PGPORT=${6}
+  SSLMODE=${7}
+  BACKUP=${8}
+  TRIGGER_FILE=${9}
+  KEEP=${10}
+  COMPRESS=${11}
 
   if [ "$BACKUP" = "true" ]  
   then
@@ -96,9 +98,10 @@ setup_replication() {
   SSLMODE: $SSLMODE
   KEEP: $KEEP
   BACKUPARGS: $BACKUPARGS
+  MAX_RATE: $MAX_RATE
   "
 
-  su - postgres -c "pg_basebackup -D ${PGDATADEST} ${BACKUPARGS} --host=${REPL_HOST} --port=${PGPORT} -x -P --username=${REPL_USER} --password" <<EOF
+  su - postgres -c "pg_basebackup -r $MAX_RATE -D ${PGDATADEST} ${BACKUPARGS} --host=${REPL_HOST} --port=${PGPORT} -x -P --username=${REPL_USER} --password" <<EOF
 ${REPL_PASS}
 EOF
   RC=$?
@@ -144,6 +147,7 @@ show_help() {
   echo "-n, --no_ping       Disables the ping check before attempting to use the remote source"
   echo "-p, --repl_pass     The replication password to use (default: repl)"
   echo "-P, --pgport        The postgres port (default: ${PGPORT})"
+  echo "-r, --max-rate      The maximum transfer rate of data transferred from the server. Values in KB by default add 'M' for MB"
   echo "-s, --sslmode       The sslmode for postgres (disable, allow, prefer, require, "
   echo "                      verify-ca, verify-full).  Default: require"
   echo "-t, --trigger_file  Full path of trigger file to be used in recovery.conf"
@@ -193,6 +197,11 @@ while test $# -gt 0; do
     -P|--pgport)
       shift
       PGPORT=$1
+      shift
+      ;;
+    -r|--max-rate)
+      shift
+      MAX_RATE=$1
       shift
       ;;
     -s|--sslmode)
@@ -272,6 +281,6 @@ else
   exit 1
 fi
 
-setup_replication $REPL_HOST $REPL_USER $REPL_PASS $PGDATA $PGPORT $SSLMODE $BACKUP $TRIGGER_FILE $KEEP $COMPRESS
+setup_replication "$MAX_RATE" $REPL_HOST $REPL_USER $REPL_PASS $PGDATA $PGPORT $SSLMODE $BACKUP $TRIGGER_FILE $KEEP $COMPRESS
 
 
