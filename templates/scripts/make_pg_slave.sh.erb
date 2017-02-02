@@ -17,12 +17,12 @@ SSLMODE='require'
 BACKUP='false'
 TRIGGER_FILE="<%= @_datadir %>/failover.txt"
 PING_CHECK='true'
-MAX_RATE='-r 15M'
+MAX_RATE='15M'
 
 
 setup_replication() {
 
-  MAX_RATE="${1}"
+  MAX_RATE=${1}
   REPL_HOST=${2}
   REPL_USER=${3}
   REPL_PASS=${4}
@@ -101,7 +101,7 @@ setup_replication() {
   MAX_RATE: $MAX_RATE
   "
 
-  su - postgres -c "pg_basebackup $MAX_RATE -D ${PGDATADEST} ${BACKUPARGS} --host=${REPL_HOST} --port=${PGPORT} -x -P --username=${REPL_USER} --password" <<EOF
+  su - postgres -c "pg_basebackup -r $MAX_RATE -D ${PGDATADEST} ${BACKUPARGS} --host=${REPL_HOST} --port=${PGPORT} -x -P --username=${REPL_USER} --password" <<EOF
 ${REPL_PASS}
 EOF
   RC=$?
@@ -201,7 +201,7 @@ while test $# -gt 0; do
       ;;
     -r|--max-rate)
       shift
-      MAX_RATE="-r $1"
+      MAX_RATE=$1
       shift
       ;;
     -s|--sslmode)
@@ -281,6 +281,6 @@ else
   exit 1
 fi
 
-setup_replication "$MAX_RATE" $REPL_HOST $REPL_USER $REPL_PASS $PGDATA $PGPORT $SSLMODE $BACKUP $TRIGGER_FILE $KEEP $COMPRESS 
+setup_replication "$MAX_RATE" $REPL_HOST $REPL_USER $REPL_PASS $PGDATA $PGPORT $SSLMODE $BACKUP $TRIGGER_FILE $KEEP $COMPRESS
 
 
