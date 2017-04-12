@@ -114,7 +114,7 @@ EOF
 
   su - postgres -c "echo -e \"standby_mode = 'on'
 primary_conninfo = 'host=${REPL_HOST} sslmode=${SSLMODE} user=${REPL_USER} password=${REPL_PASS}'
-trigger_file = '${TRIGGER_FILE}' \"
+trigger_file = '${TRIGGER_FILE}'
 recovery_target_timeline = 'latest'\" > ${PGDATADEST}/recovery.conf"
 
   if ! [ "$BACKUP" = "true" ]  
