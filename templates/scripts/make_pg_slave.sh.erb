@@ -101,7 +101,7 @@ setup_replication() {
   MAX_RATE: $MAX_RATE
   "
 
-  su - postgres -c "pg_basebackup -r $MAX_RATE -D ${PGDATADEST} ${BACKUPARGS} --host=${REPL_HOST} --port=${PGPORT} -x -P --username=${REPL_USER} --password" <<EOF
+  su - postgres -c "pg_basebackup -r $MAX_RATE -D ${PGDATADEST} ${BACKUPARGS} --host=${REPL_HOST} --port=${PGPORT} --xlog-method=s -P --username=${REPL_USER} --password" <<EOF
 ${REPL_PASS}
 EOF
   RC=$?
@@ -114,8 +114,8 @@ EOF
 
   su - postgres -c "echo -e \"standby_mode = 'on'
 primary_conninfo = 'host=${REPL_HOST} sslmode=${SSLMODE} user=${REPL_USER} password=${REPL_PASS}'
-trigger_file = '${TRIGGER_FILE}' \" > ${PGDATADEST}/recovery.conf
-recovery_target_timeline = 'latest'"
+trigger_file = '${TRIGGER_FILE}'
+recovery_target_timeline = 'latest'\" > ${PGDATADEST}/recovery.conf"
 
   if ! [ "$BACKUP" = "true" ]  
   then
