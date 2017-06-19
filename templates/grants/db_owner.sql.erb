@@ -1,4 +1,5 @@
 GRANT create ON  SCHEMA "<%= @schema %>" TO "<%= @username %>";
+GRANT USAGE ON SCHEMA "<%= @schema %>" TO "<%= @username %>";
 GRANT ALL ON ALL TABLES IN SCHEMA "<%= @schema %>" TO "<%= @username %>";
 GRANT execute ON ALL functions IN SCHEMA "<%= @schema %>" TO "<%= @username %>"; 
 GRANT USAGE ON ALL sequences IN SCHEMA "<%= @schema %>" TO "<%= @username %>";
