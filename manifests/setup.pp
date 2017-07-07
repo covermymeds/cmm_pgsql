@@ -1,3 +1,4 @@
+# Setup postgresql config
 class cmm_pgsql::setup (
   $pg_archive_dir = '/var/lib/pgsql/archive',
 ){
@@ -11,7 +12,17 @@ class cmm_pgsql::setup (
       ensure => 'present',
     }
 
-    create_resources(::postgresql::server::config_entry, $config, $defaults)
+    #filter out 'checkpoint_segments' from 9.5+ hosts
+    if versioncmp('9.5', $::postgresql::globals::version) >= 0 {
+      $cs_rm = {
+        'checkpoint_segments' => {
+          ensure => 'absent'
+        }
+      }
+      create_resources(::postgresql::server::config_entry, merge($config, $cs_rm), $defaults)
+    } else {
+      create_resources(::postgresql::server::config_entry, $config, $defaults)
+    }
   }
 
   #setup log management
