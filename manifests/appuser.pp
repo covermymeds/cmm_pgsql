@@ -51,7 +51,7 @@ define cmm_pgsql::appuser (
     }
     
     # give permissions to the user on the schema
-    $schema_create = "schema: ${schema} ${username}@${database}"
+    $schema_create = "schema: ${schema} ${database}"
     unless defined(Postgresql::Server::Schema[$schema_create]) {
       postgresql::server::schema{ $schema_create:
         db     => $database,
