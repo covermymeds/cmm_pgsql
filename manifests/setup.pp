@@ -1,3 +1,4 @@
+# Setup postgresql config
 class cmm_pgsql::setup (
   $pg_archive_dir = '/var/lib/pgsql/archive',
 ){
@@ -11,7 +12,24 @@ class cmm_pgsql::setup (
       ensure => 'present',
     }
 
-    create_resources(::postgresql::server::config_entry, $config, $defaults)
+    # Create a filter to limit the options based on the postgresql version
+    case versioncmp($::postgresql::globals::version, '9.5') {
+      -1: {
+          # below version 9.5, remove min_wal_size and max_wal_size
+          $filter = {
+            'min_wal_size' => { ensure => 'absent' },
+            'max_wal_size' => { ensure => 'absent' }
+          }
+        }
+      0,1: {
+          # 9.5 and above, remove checkpoint_segments
+          $filter = {
+            'checkpoint_segments' => { ensure => 'absent' }
+          }
+        }
+      default: { $filter = { } }
+    }
+    create_resources(::postgresql::server::config_entry, merge($config, $filter), $defaults)
   }
 
   #setup log management
@@ -46,20 +64,20 @@ class cmm_pgsql::setup (
       group   => $::postgresql::server::group,
       mode    => '0700',
       require => Class['::postgresql::server::initdb'],
-    } ->
-    file { '/var/lib/pgsql/.ssh/id_rsa':
+    }
+    -> file { '/var/lib/pgsql/.ssh/id_rsa':
       mode   => '0600',
       owner  => $::postgresql::server::user,
       group  => $::postgresql::server::group,
       source => "${::cmm_pgsql::keysource}/id_rsa",
-    } ->
-    file { '/var/lib/pgsql/.ssh/id_rsa.pub':
+    }
+    -> file { '/var/lib/pgsql/.ssh/id_rsa.pub':
       mode   => '0600',
       owner  => $::postgresql::server::user,
       group  => $::postgresql::server::group,
       source => "${::cmm_pgsql::keysource}/id_rsa.pub",
-    } ->
-    file { '/var/lib/pgsql/.ssh/authorized_keys':
+    }
+    -> file { '/var/lib/pgsql/.ssh/authorized_keys':
       mode   => '0600',
       owner  => $::postgresql::server::user,
       group  => $::postgresql::server::group,
