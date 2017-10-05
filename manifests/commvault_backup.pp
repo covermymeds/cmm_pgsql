@@ -20,4 +20,5 @@ class cmm_pgsql::commvault_backup (
     group   => 'postgres',
     mode    => '0775',
     require => Package['cmm-cv_iDA-pgsql'],
+  }
 }
