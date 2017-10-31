@@ -21,6 +21,10 @@
 #
 # This class *requires* our ssl class, so that we can use the SSL certificate
 #
+# cmm_pgsql::keysource should be overridden with a path to secure keys. This
+# module used to contain sample keys for easy implementation and those have
+# been removed to prevent people from using a key that is publicly accessible
+#
 class cmm_pgsql (
   $cluster              = 'dev',
   $repl_user            = 'repl',
