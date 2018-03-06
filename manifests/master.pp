@@ -48,16 +48,6 @@ class cmm_pgsql::master {
   }
 
 
-  # Look up hieradata for our list of databases
-  $_dblist = hiera("cmm_pgsql::dblist::${::cmm_pgsql::cluster}", {})
-  
-  unless empty($_dblist) {
-
-    # Create our database(s)
-    create_resources(::cmm_pgsql::appdb, $_dblist)
-
-  }
-
   # install admin pack (prevents pgAdminIII from griping about features)
   postgresql_psql { 'verify_adminpack_installed':
     command => 'CREATE EXTENSION adminpack;',

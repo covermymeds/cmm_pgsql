@@ -42,7 +42,7 @@ class cmm_pgsql (
 
   # Do nothing while in failover
   unless str2bool($::pg_failover) {
-    
+
     # include pgbouncer if enabled
     if $pgbouncer_enabled {
       include ::pgbouncer
@@ -53,8 +53,9 @@ class cmm_pgsql (
     # Is the server is in replication mode or not?
     # if it is, no writes should occur
     if str2bool($::pg_ismaster) {
-    
+
       include ::cmm_pgsql::master
+      include ::cmm_pgsql::db_objects
 
     } # End if $::is_pgmaster operations
   } # End unless $::pg_failover
