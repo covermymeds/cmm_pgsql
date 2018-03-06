@@ -1,11 +1,9 @@
 # Setup postgresql config
 class cmm_pgsql::setup (
-  $pg_archive_dir = '/var/lib/pgsql/archive',
+  String $pg_archive_dir = '/var/lib/pgsql/archive',
+  Hash $config = hiera_hash('cmm_pgsql::config', {})
 ){
-  $config = hiera_hash('cmm_pgsql::config', {})
   unless empty($config) {
-
-    validate_hash($config)
 
     # Set a sane default for created resources
     $defaults = {
@@ -29,7 +27,11 @@ class cmm_pgsql::setup (
         }
       default: { $filter = { } }
     }
-    create_resources(::postgresql::server::config_entry, merge($config, $filter), $defaults)
+    merge($config, $filter).each |$config, $values| {
+      ::postgresql::server::config_entry { $config
+        * => $defaults + $values,  # right side takes precedence
+      }
+    }
   }
 
   #setup log management
@@ -44,17 +46,17 @@ class cmm_pgsql::setup (
   }
 
   #setup pg_ident if values exist
-  $_pg_ident = $::cmm_pgsql::pg_ident
-  unless empty($_pg_ident) {
-    create_resources(postgresql::server::pg_ident_rule, $_pg_ident)
+  $::cmm_pgsql::pg_ident.each | $user, $values | {
+    ::postgresql::server::pg_ident_rule { $user:
+      * => $values,
+    }
   }
 
-  #setup pg_hba_rule if values exist
-  $_pg_hba_rule = $::cmm_pgsql::pg_hba_rule
-  unless empty($_pg_hba_rule) {
-    create_resources(postgresql::server::pg_hba_rule, $_pg_hba_rule)
+  $::cmm_pgsql::pg_hba_rule.each | $rule, $values | {
+    ::postgresql::server::pg_hba_rule { $rule:
+      * => $values,
+    }
   }
-
 
   #setup postgres ssh keys
   unless empty($::cmm_pgsql::keysource) {
@@ -118,9 +120,9 @@ class cmm_pgsql::setup (
   $_monitors = hiera_hash('cmm_pgsql::monitoring', {})
 
   #create monitors from generic data or with what is defined for host in hiera
-  unless empty($_monitors) {
-    create_resources(::cmm_pgsql::monitoring_wrapper, $_monitors)
+  $_monitors.each |$monitor, $values| {
+    ::cmm_pgsql::monitoring_wrapper { $monitor:
+      * => $values,
+    }
   }
-
-
 }
