@@ -55,7 +55,7 @@ class cmm_pgsql (
     if str2bool($::pg_ismaster) {
 
       include ::cmm_pgsql::master
-      include ::cmm_pgsql::db_objects
+      include ::cmm_pgsql::create_objects
 
     } # End if $::is_pgmaster operations
   } # End unless $::pg_failover

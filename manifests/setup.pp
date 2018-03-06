@@ -28,7 +28,7 @@ class cmm_pgsql::setup (
       default: { $filter = { } }
     }
     merge($config, $filter).each |$config, $values| {
-      ::postgresql::server::config_entry { $config
+      ::postgresql::server::config_entry { $config:
         * => $defaults + $values,  # right side takes precedence
       }
     }
