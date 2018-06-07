@@ -108,6 +108,7 @@ class cmm_pgsql::setup (
     "pg_top${::postgresql::server::package_version}",
     "postgresql${::postgresql::server::package_version}-contrib",
     "slony1-${::postgresql::server::package_version}",
+    "postgresql${::postgresql::server::package_version}-pglogical",
   ]
 
   package { $_packages:
