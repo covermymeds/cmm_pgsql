@@ -108,11 +108,20 @@ class cmm_pgsql::setup (
     "pg_top${::postgresql::server::package_version}",
     "postgresql${::postgresql::server::package_version}-contrib",
     "slony1-${::postgresql::server::package_version}",
-    "postgresql${::postgresql::server::package_version}-pglogical",
   ]
+
 
   package { $_packages:
     ensure  => installed,
+  }
+
+  $_pglocial_rhel_ensure = $::operatingsystemmajrelease ? {
+    '6'     => absent,
+    default => present,
+  }
+
+  package { "postgresql${::postgresql::server::package_version}-pglogical":
+    ensure => $_pglocial_rhel_ensure
   }
 
   # Pull in monitor data from hiera and create the checks
