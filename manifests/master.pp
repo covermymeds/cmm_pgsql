@@ -12,6 +12,15 @@ class cmm_pgsql::master {
     replication   => true,
   }
 
+  # DLP user
+  postgresql::server::role { $::cmm_pgsql::dlp_user:
+    password_hash => postgresql_password($::cmm_pgsql::dlp_user, $::cmm_pgsql::dlp_pass),
+    superuser     => true,
+    createrole    => true,
+    createdb      => true,
+    replication   => true,
+  }
+
   # Create maintenance database for admin user
   # This needs to run after creation of admin role
   postgresql::server::database { $::cmm_pgsql::admin_user:

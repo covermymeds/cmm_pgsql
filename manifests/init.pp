@@ -31,6 +31,8 @@ class cmm_pgsql (
   $repl_pass            = 'repl',
   $admin_user           = 'admin',
   $admin_pass           = 'admin',
+  $dlp_user             = 'dlp',
+  $dlp_pass             = 'dlp',
   $keysource            = 'puppet:///modules/cmm_pgsql',
   $include_commvault    = true,
   $keepalived_notifylog = '/tmp/keepalived_notify.out',
