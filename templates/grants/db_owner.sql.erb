@@ -1,8 +1,8 @@
-GRANT all on database "<%= @database %>" to "<%= @username %>" ;
-GRANT create ON  SCHEMA "<%= @schema %>" TO "<%= @username %>";
+GRANT ALL ON DATABASE "<%= @database %>" TO "<%= @username %>" ;
+GRANT CREATE ON  SCHEMA "<%= @schema %>" TO "<%= @username %>";
 GRANT USAGE ON SCHEMA "<%= @schema %>" TO "<%= @username %>";
 GRANT ALL ON ALL TABLES IN SCHEMA "<%= @schema %>" TO "<%= @username %>";
-GRANT execute ON ALL functions IN SCHEMA "<%= @schema %>" TO "<%= @username %>"; 
+GRANT EXECUTE ON ALL functions IN SCHEMA "<%= @schema %>" TO "<%= @username %>"; 
 GRANT USAGE ON ALL sequences IN SCHEMA "<%= @schema %>" TO "<%= @username %>";
 ALTER DEFAULT PRIVILEGES IN SCHEMA "<%= @schema %>" GRANT ALL ON TABLES TO "<%= @username %>";
 ALTER DEFAULT PRIVILEGES IN SCHEMA "<%= @schema %>" GRANT execute ON functions to "<%= @username %>";
