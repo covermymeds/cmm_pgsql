@@ -1,3 +1,4 @@
+GRANT all on database "<%= @database %>" to "<%= @username %>" ;
 GRANT create ON  SCHEMA "<%= @schema %>" TO "<%= @username %>";
 GRANT USAGE ON SCHEMA "<%= @schema %>" TO "<%= @username %>";
 GRANT ALL ON ALL TABLES IN SCHEMA "<%= @schema %>" TO "<%= @username %>";
