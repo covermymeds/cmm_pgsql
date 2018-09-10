@@ -124,6 +124,12 @@ class cmm_pgsql::setup (
     ensure => $_pglocial_rhel_ensure
   }
 
+  #add symlink to pg_top
+  file { '/bin/pg_top':
+    ensure => 'link',
+    target => "${::postgresql::server::bindir}/pg_top",
+  }
+
   # Pull in monitor data from hiera and create the checks
   $_monitors = hiera_hash('cmm_pgsql::monitoring', {})
 
@@ -131,6 +137,5 @@ class cmm_pgsql::setup (
   unless empty($_monitors) {
     create_resources(::cmm_pgsql::monitoring_wrapper, $_monitors)
   }
-
 
 }
