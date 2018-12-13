@@ -1,5 +1,7 @@
 #cmm_pgsql
 
+THIS REPOSITORY HAS BEEN ARCHIVED AND SHOULD BE USED ONLY FOR REFERENCE PURPOSES.
+
 ####Table of Contents
 
 1. [Overview](#overview)
